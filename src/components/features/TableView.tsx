@@ -68,20 +68,32 @@ const TableView: React.FC<TableViewProps> = ({
           >
             {visibleColumns.map(([key, value]) => (
               <TableCell
-                key={key}
-                sx={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  minWidth: "100px",
-                  maxWidth: "300px",
-                  fontWeight: 600,
-                  fontSize: "0.9rem",
-                  color: "text.primary",
-                  padding: "12px 16px",
-                  backgroundColor: "background.paper",
-                }}
-              >
+                  key={key}
+                  sx={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    minWidth: {
+                      xs: "80px",
+                      md: "100px",
+                    },
+                    maxWidth: {
+                      xs: "200px",
+                      md: "300px",
+                    },
+                    fontWeight: 600,
+                    fontSize: {
+                      xs: "0.8rem",
+                      md: "0.9rem",
+                    },
+                    color: "text.primary",
+                    padding: {
+                      xs: "8px 12px",
+                      md: "12px 16px",
+                    },
+                    backgroundColor: "background.paper",
+                  }}
+                >
                 {String(value)}
               </TableCell>
             ))}
@@ -109,10 +121,22 @@ const TableView: React.FC<TableViewProps> = ({
                   sx={{
                     whiteSpace: "normal",
                     wordBreak: "break-word",
-                    minWidth: "100px",
-                    maxWidth: "300px",
-                    padding: "12px 16px",
-                    fontSize: "0.9rem",
+                    minWidth: {
+                      xs: "80px",
+                      md: "100px",
+                    },
+                    maxWidth: {
+                      xs: "200px",
+                      md: "300px",
+                    },
+                    padding: {
+                      xs: "8px 12px",
+                      md: "12px 16px",
+                    },
+                    fontSize: {
+                      xs: "0.8rem",
+                      md: "0.9rem",
+                    },
                     verticalAlign: "top",
                   }}
                 >

@@ -38,8 +38,15 @@ const CardView: React.FC<CardViewProps> = ({
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-        gap: 3,
+        gridTemplateColumns: {
+          xs: "repeat(auto-fill, minmax(140px, 1fr))",
+          sm: "repeat(auto-fill, minmax(260px, 1fr))",
+          md: "repeat(auto-fill, minmax(320px, 1fr))",
+        },
+        gap: {
+          xs: 2,
+          md: 3,
+        },
         justifyContent: "center",
         overflow: "hidden",
       }}
@@ -49,7 +56,10 @@ const CardView: React.FC<CardViewProps> = ({
           key={index}
           sx={{
             perspective: "1000px",
-            height: "400px",
+            height: {
+              xs: "320px",
+              md: "400px",
+            },
             position: "relative",
             cursor: "pointer",
             "&:hover > div": {
@@ -123,6 +133,14 @@ const CardView: React.FC<CardViewProps> = ({
                           color: "white",
                           fontWeight: 600,
                           textAlign: "center",
+                          fontSize: {
+                            xs: "0.875rem",
+                            md: "1.25rem",
+                          },
+                          lineHeight: {
+                            xs: 1.3,
+                            md: 1.5,
+                          },
                         }}
                       >
                         {row[keywordField] || ""}
@@ -133,7 +151,10 @@ const CardView: React.FC<CardViewProps> = ({
               ) : (
                 <Box
                   sx={{
-                    p: 3,
+                    p: {
+                      xs: 2,
+                      md: 3,
+                    },
                     height: "100%",
                     display: "flex",
                     flexDirection: "column",
@@ -160,8 +181,14 @@ const CardView: React.FC<CardViewProps> = ({
                         sx={{
                           fontWeight: 600,
                           color: "text.secondary",
-                          mb: 0.75,
-                          fontSize: "0.85rem",
+                          mb: {
+                            xs: 0.5,
+                            md: 0.75,
+                          },
+                          fontSize: {
+                            xs: "0.75rem",
+                            md: "0.85rem",
+                          },
                           textTransform: "uppercase",
                           letterSpacing: "0.5px",
                         }}
@@ -171,7 +198,10 @@ const CardView: React.FC<CardViewProps> = ({
                       <Box
                         sx={{
                           ml: 0,
-                          fontSize: "0.95rem",
+                          fontSize: {
+                            xs: "0.85rem",
+                            md: "0.95rem",
+                          },
                           lineHeight: 1.5,
                         }}
                       >
@@ -195,7 +225,10 @@ const CardView: React.FC<CardViewProps> = ({
                   boxShadow: 2,
                   transform: "rotateY(180deg)",
                   backgroundColor: "background.paper",
-                  padding: 3,
+                  padding: {
+                    xs: 2,
+                    md: 3,
+                  },
                   overflow: "auto",
                 }}
               >
@@ -231,7 +264,7 @@ const CardView: React.FC<CardViewProps> = ({
                     <Box
                       sx={{
                         ml: 0,
-                        fontSize: "0.95rem",
+                        fontSize: "0.785rem",
                         lineHeight: 1.5,
                       }}
                     >

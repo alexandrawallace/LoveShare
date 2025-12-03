@@ -289,6 +289,125 @@ const Sidebar: React.FC<SidebarProps> = ({
             const hasCategories = categories[tableName]?.length > 0;
             const isSelected = selectedTable === tableName && !selectedCategory;
 
+            // navigation表格特殊处理：将分类直接放在侧边栏上
+            if (
+              tableName === "navigation" &&
+              isCategoryEnabled &&
+              hasCategories
+            ) {
+              // 先渲染navigation主项
+              return (
+                <React.Fragment key={tableName}>
+                  {/* navigation主项 */}
+                  <ListItem disablePadding sx={{ display: "block" }}>
+                    <ListItemButton
+                      selected={isSelected}
+                      onClick={() => handleListItemClick(tableName, null)}
+                      sx={{
+                        minHeight: 48,
+                        justifyContent: isOpen ? "initial" : "center",
+                        px: isOpen ? 2.5 : 1,
+                        borderRadius: isOpen ? "8px" : "12px",
+                        margin: "4px 8px",
+                        "&.Mui-selected": {
+                          backgroundColor: muiTheme.palette.action.selected,
+                          "&:hover": {
+                            backgroundColor: muiTheme.palette.action.hover,
+                          },
+                        },
+                        "&:hover": {
+                          backgroundColor: muiTheme.palette.action.hover,
+                        },
+                        transition:
+                          "background-color var(--theme-transition-duration) ease",
+                      }}
+                    >
+                      <ListItemText
+                        primary={
+                          isOpen
+                            ? config.show_name
+                            : config.show_name.slice(0, 2)
+                        }
+                        primaryTypographyProps={{
+                          noWrap: true,
+                          sx: {
+                            fontWeight: isSelected ? 600 : 400,
+                            color: isSelected ? "primary.main" : "text.primary",
+                            fontSize: isOpen ? "0.95rem" : "0.7rem",
+                            textAlign: "center",
+                            lineHeight: 1.2,
+                            letterSpacing: "-0.02em",
+                          },
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+
+                  {/* navigation分类直接显示在侧边栏，不使用子菜单 */}
+                  {categories[tableName]?.map((category) => {
+                    const isCategorySelected =
+                      selectedTable === tableName &&
+                      selectedCategory === category;
+                    return (
+                      <ListItem key={`${tableName}-${category}`} disablePadding>
+                        <ListItemButton
+                          selected={isCategorySelected}
+                          onClick={() =>
+                            handleListItemClick(tableName, category)
+                          }
+                          sx={{
+                            pl: isOpen ? 2.5 : 1,
+                            pr: isOpen ? 2.5 : 1,
+                            minHeight: 48,
+                            justifyContent: isOpen ? "initial" : "center",
+                            borderRadius: isOpen ? "8px" : "12px",
+                            margin: "4px 8px",
+                            backgroundColor: muiTheme.palette.background.paper,
+                            "&.Mui-selected": {
+                              backgroundColor: muiTheme.palette.action.selected,
+                              "&:hover": {
+                                backgroundColor: muiTheme.palette.action.hover,
+                              },
+                            },
+                            "&:hover": {
+                              backgroundColor: muiTheme.palette.action.hover,
+                            },
+                            transition:
+                              "background-color var(--theme-transition-duration) ease",
+                          }}
+                        >
+                          <ListItemText
+                            primary={isOpen ? category : category.slice(0, 2)}
+                            primaryTypographyProps={{
+                              noWrap: true,
+                              sx: {
+                                fontSize: isOpen ? "0.9rem" : "0.7rem",
+                                fontWeight: isCategorySelected ? 600 : 400,
+                                color: isCategorySelected
+                                  ? "primary.main"
+                                  : "text.primary",
+                                textAlign: "center",
+                                lineHeight: 1.2,
+                                letterSpacing: "-0.02em",
+                                whiteSpace: "nowrap",
+                                overflow: "visible",
+                                // 添加左侧缩进指示器
+                                paddingLeft: isOpen ? "16px" : "0px",
+                                borderLeft: isOpen
+                                  ? `3px solid ${muiTheme.palette.primary.main}`
+                                  : "none",
+                              },
+                            }}
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                    );
+                  })}
+                </React.Fragment>
+              );
+            }
+
+            // 其他表格保持原有逻辑
             return (
               <React.Fragment key={tableName}>
                 <ListItem disablePadding sx={{ display: "block" }}>

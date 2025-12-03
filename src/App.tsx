@@ -37,8 +37,11 @@ function Page() {
   }>({});
   // 分页状态
   const [currentPage, setCurrentPage] = useState(1);
-  // 每页显示数量
-  const pageSize = parseInt(import.meta.env.VITE_SUPABASE_PAGE_SIZE || "8");
+  // 每页显示数量 - 为navigation表格使用专属配置
+  const pageSize =
+    selectedTable === "navigation"
+      ? parseInt(import.meta.env.VITE_NAVIGATION_PAGE_SIZE || "32")
+      : parseInt(import.meta.env.VITE_SUPABASE_PAGE_SIZE || "8");
   // 视图模式：table 或 card
   const [viewMode, setViewMode] = useState<"table" | "card">("table");
   // 搜索状态
@@ -276,7 +279,6 @@ function Page() {
       {/* 页面标题和视图切换 */}
       <Box
         sx={{
-          mb: 3,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -287,32 +289,23 @@ function Page() {
         {/* 页面标题 */}
         <Box>
           <Typography
-            variant="h5"
-            component="h1"
-            sx={{
-              fontWeight: 600,
-              mb: 1,
-              color: "primary.main",
-            }}
-          >
-            {import.meta.env.VITE_SYSTEM_NAME}
-          </Typography>
-          <Typography
             variant="h6"
             component="h2"
             sx={{
               color: "text.secondary",
-              fontWeight: 400,
+              fontWeight: 500,
+              fontSize: "0.875rem",
             }}
           >
-            当前：{tableConfig[selectedTable]?.show_name || selectedTable}
+            {tableConfig[selectedTable]?.show_name || selectedTable}
             {selectedCategory && (
               <Typography
                 component="span"
                 variant="body1"
                 sx={{
-                  ml: 2,
+                  ml: 1,
                   color: "text.secondary",
+                  fontSize: "0.875rem",
                   fontWeight: 300,
                 }}
               >
@@ -339,11 +332,11 @@ function Page() {
               border: (theme) => `1px solid ${theme.palette.divider}`,
               boxShadow: (theme) => theme.shadows[1],
               "& .MuiToggleButton-root": {
-                borderRadius: "8px",
-                px: 3,
-                py: 1.25,
+                borderRadius: "10px",
+                px: 1,
+                py: 0.5,
                 fontWeight: 500,
-                fontSize: "0.875rem",
+                fontSize: "0.675rem",
                 textTransform: "none",
                 transition: "all 0.2s ease",
                 "&:hover": {
@@ -373,7 +366,7 @@ function Page() {
       </Box>
 
       {/* 搜索栏 */}
-      <Box sx={{ mb: 3, maxWidth: 600 }}>
+      <Box sx={{ mb: 0, maxWidth: 600 }}>
         <SearchBar
           onSearch={setSearchTerm}
           placeholder={`搜索 ${
@@ -387,7 +380,7 @@ function Page() {
         sx={{
           flex: 1,
           overflowY: "auto",
-          mb: 2,
+          mb: 1,
           /* 隐藏滚动条但保持滚动功能 */
           "&::-webkit-scrollbar": {
             width: 0,
