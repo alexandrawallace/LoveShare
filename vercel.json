@@ -12,5 +12,15 @@
         "distDir": "dist"
       }
     }
+  ],
+  "routes": [
+    {
+      "src": "/api/vod/(.*)",
+      "dest": "/api/vod/[...path].js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/dist/$1"
+    }
   ]
 }
