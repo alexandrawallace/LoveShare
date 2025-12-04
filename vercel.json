@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/vod/[...path].js": {
+      "runtime": "nodejs18.x"
+    }
+  }
+}

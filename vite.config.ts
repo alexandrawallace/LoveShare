@@ -21,11 +21,7 @@ export default defineConfig(({ mode }) => {
           target: env.VITE_FILMTELEVISION_API_BASE_URL,
           changeOrigin: true,
           rewrite: (path) =>
-            path.replace(
-              /^\/api\/vod/,
-              // 从env中读取apipath
-              env.VITE_FILMTELEVISION_API_PATH || ""
-            ),
+            path.replace(/^\/api\/vod/, env.VITE_FILMTELEVISION_API_PATH),
           secure: false,
         },
       },
