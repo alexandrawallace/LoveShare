@@ -144,10 +144,15 @@ const VideoOnline: React.FC = () => {
 
   return (
     <Box sx={{ padding: 2, maxWidth: 1200, margin: "0 auto" }}>
+      {/* 居中加粗 提示不要相信视频中的广告 */}
+      <Typography variant="body2" sx={{ marginBottom: 2, fontWeight: 600 }}>
+        请不要相信视频中的广告，视频搜索均来自网络，仅供学习和 entertainment
+        purposes。
+      </Typography>
       {/* 搜索区域 */}
       <Box sx={{ display: "flex", gap: 2, marginBottom: 3 }}>
         <Input
-          placeholder="搜索视频..."
+          placeholder="输入你想看的..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           sx={{ flex: 1, minWidth: 300 }}
@@ -195,20 +200,26 @@ const VideoOnline: React.FC = () => {
 
       {/* 视频信息和集数 */}
       {selectedVideo && (
-        <Box sx={{ marginBottom: 3 }}>
-          <Card sx={{ marginBottom: 2 }}>
+        <Box
+          sx={{
+            marginBottom: 3,
+            transition:
+              "background-color var(--theme-transition-duration) ease",
+          }}
+        >
+          <Card
+            sx={{
+              marginBottom: 2,
+              transition:
+                "background-color var(--theme-transition-duration) ease",
+            }}
+          >
             <Box
               sx={{
                 display: "flex",
                 flexDirection: { xs: "column", md: "row" },
               }}
             >
-              <CardMedia
-                component="img"
-                sx={{ width: { xs: "50%", md: 200 }, height: "auto" }}
-                image={selectedVideo.vod_pic}
-                alt={selectedVideo.vod_name}
-              />
               <CardContent sx={{ flex: 1 }}>
                 <Typography
                   variant="h5"
@@ -221,21 +232,45 @@ const VideoOnline: React.FC = () => {
                   <Typography variant="subtitle2" sx={{ marginBottom: 1 }}>
                     集数列表：
                   </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {selectedVideo.episodes.map((episode, index) => (
-                      <Chip
-                        key={index}
-                        label={episode.name}
-                        onClick={() => playVideo(episode.url)}
-                        color={
-                          selectedEpisode === episode.url
-                            ? "primary"
-                            : "default"
-                        }
-                        clickable
-                        sx={{ margin: "2px" }}
-                      />
-                    ))}
+                  <Box
+                    sx={{
+                      maxHeight: 120,
+                      overflowY: "auto",
+                      scrollbarWidth: "none",
+                      "&::-webkit-scrollbar": { display: "none" },
+                      position: "relative",
+                      // 底部渐变遮罩，提示可继续滚动
+                      "&::after": {
+                        content: '""',
+                        position: "absolute",
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        height: 24,
+                        background:
+                          "linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.6))",
+                        pointerEvents: "none",
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{ display: "flex", flexWrap: "wrap", gap: 1, pb: 1 }}
+                    >
+                      {selectedVideo.episodes.map((episode, index) => (
+                        <Chip
+                          key={index}
+                          label={episode.name}
+                          onClick={() => playVideo(episode.url)}
+                          color={
+                            selectedEpisode === episode.url
+                              ? "primary"
+                              : "default"
+                          }
+                          clickable
+                          sx={{ margin: "2px" }}
+                        />
+                      ))}
+                    </Box>
                   </Box>
                 </Box>
               </CardContent>
@@ -255,6 +290,8 @@ const VideoOnline: React.FC = () => {
               display: "grid",
               gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
               gap: 2,
+              transition:
+                "background-color var(--theme-transition-duration) ease",
             }}
           >
             {videoList.map((video, index) => (
@@ -266,13 +303,21 @@ const VideoOnline: React.FC = () => {
                     playVideo(video.episodes[0].url);
                   }
                 }}
-                sx={{ cursor: "pointer" }}
+                sx={{
+                  cursor: "pointer",
+                  // 边框
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  transition:
+                    "background-color var(--theme-transition-duration) ease",
+                }}
               >
                 <CardMedia
                   component="img"
-                  height="auto"
+                  height="388"
                   image={video.vod_pic}
                   alt={video.vod_name}
+                  // 等比例缩放图片
+                  sx={{ objectFit: "contain" }}
                 />
                 <CardContent>
                   <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
