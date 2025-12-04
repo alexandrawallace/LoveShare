@@ -205,7 +205,7 @@ const VideoOnline: React.FC = () => {
             >
               <CardMedia
                 component="img"
-                sx={{ width: { xs: "100%", md: 200 }, height: "auto" }}
+                sx={{ width: { xs: "50%", md: 200 }, height: "auto" }}
                 image={selectedVideo.vod_pic}
                 alt={selectedVideo.vod_name}
               />
@@ -270,7 +270,7 @@ const VideoOnline: React.FC = () => {
               >
                 <CardMedia
                   component="img"
-                  height="200"
+                  height="auto"
                   image={video.vod_pic}
                   alt={video.vod_name}
                 />
