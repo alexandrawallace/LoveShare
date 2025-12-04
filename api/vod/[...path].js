@@ -1,7 +1,6 @@
-// 使用CommonJS模块语法，兼容Vercel Node.js运行时
-const fetch = require("node-fetch");
+// 使用ES模块语法，兼容Vercel Node.js运行时
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   // 设置CORS头
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -73,4 +72,4 @@ module.exports = async function handler(req, res) {
       .status(500)
       .json({ error: "Internal Server Error", details: error.message });
   }
-};
+}
