@@ -202,10 +202,9 @@ CREATE POLICY "Allow anon select" ON public.navigation FOR SELECT TO anon USING 
 
 ## 反馈
 
-欢迎提交问题和反馈！您可以通过以下方式联系我们：
+欢迎提交问题和反馈！您可以通过以下方式联系我：
 
 - [提交 Issue](https://github.com/galokpeng/LoveShare/issues)
-- [发送邮件](mailto:galokpeng@gmail.com)
 
 ## 致谢
 
