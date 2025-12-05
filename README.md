@@ -222,6 +222,58 @@ pnpm typecheck
 npm run typecheck
 ```
 
+## 项目构建
+
+项目使用 Vite (基于 rolldown-vite) 作为构建工具，支持快速开发和生产构建。
+
+### 构建脚本
+
+```bash
+# 开发模式
+pnpm dev
+
+# 生产构建
+pnpm build
+
+# 预览生产构建
+pnpm preview
+```
+
+### 构建流程
+
+1. TypeScript 类型检查
+2. 代码编译和打包
+3. 静态资源优化
+4. 生成生产版本
+
+构建输出目录为 `dist/`，包含优化后的 HTML、CSS 和 JavaScript 文件。
+
+## Supabase 导航栏表创建
+
+要使用项目的导航功能，需要在 Supabase 中创建 `navigation` 表。请执行以下 SQL 语句：
+
+```sql
+CREATE TABLE public.navigation (
+  id bigserial PRIMARY KEY,
+  created_at timestamp NOT NULL DEFAULT now(),
+  title varchar,
+  abstract varchar,
+  article varchar,
+  img varchar,
+  to_link text,
+  obj text
+);
+
+-- 启用 RLS（如果你需要启用）
+ALTER TABLE public.navigation ENABLE ROW LEVEL SECURITY;
+
+-- 示例：允许 authenticated 用户 SELECT（根据需要启用）
+-- CREATE POLICY "Allow authenticated select" ON public.navigation
+--   FOR SELECT TO authenticated USING (true);
+-- 示例2：直接公开
+CREATE POLICY "Allow anon select" ON public.navigation FOR SELECT TO anon USING (true);
+```
+
 ## 部署
 
 ### Vercel
@@ -251,6 +303,17 @@ MIT
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
+
+## Star 趋势
+
+[![Star History Chart](https://api.star-history.com/svg?repos=<your-github-username>/love_share&type=Date)](https://star-history.com/#<your-github-username>/love_share&Date)
+
+## 反馈
+
+欢迎提交问题和反馈！您可以通过以下方式联系我们：
+
+- [提交 Issue](https://github.com/<your-github-username>/love_share/issues)
+- [发送邮件](mailto:<your-email>)
 
 ## 致谢
 
