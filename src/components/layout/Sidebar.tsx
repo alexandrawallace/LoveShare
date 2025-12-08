@@ -188,6 +188,22 @@ const Sidebar: React.FC<SidebarProps> = ({
             // 确保侧边栏从Header下方开始，不覆盖导航栏
             top: isMobile ? 0 : "73px",
             height: isMobile ? "100%" : "calc(100% - 64px)",
+            // 隐藏滚动条但保持滚动功能
+            overflowY: "auto",
+            scrollbarWidth: "none", // Firefox
+            msOverflowStyle: "none", // IE and Edge
+            // 增强的WebKit滚动条隐藏样式，确保在Chrome中完全隐藏
+            "&::-webkit-scrollbar": {
+              display: "none",
+              width: 0,
+              height: 0,
+            },
+            "&::-webkit-scrollbar-track": {
+              display: "none",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              display: "none",
+            },
           },
         }}
       >
