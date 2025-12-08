@@ -3,6 +3,7 @@ import { Box, Typography, IconButton, Tooltip } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
+import GitHubIcon from "@mui/icons-material/GitHub";
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -62,6 +63,25 @@ const Header: React.FC<HeaderProps> = ({
             <MenuIcon />
           </IconButton>
         </Box>
+
+        {/* GitHub链接 */}
+        <Tooltip title="GitHub仓库">
+          <IconButton
+            href="https://github.com/GalokPeng/LoveShare"
+            target="_blank"
+            rel="noopener noreferrer"
+            color="inherit"
+            sx={{
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: (theme) => theme.palette.action.hover,
+                transform: "scale(1.1)",
+              },
+            }}
+          >
+            <GitHubIcon />
+          </IconButton>
+        </Tooltip>
 
         {/* 暗黑模式切换 - 太阳/月亮图标 */}
         <Tooltip title={isDarkMode ? "切换到浅色模式" : "切换到暗黑模式"}>
