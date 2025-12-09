@@ -164,6 +164,11 @@ ALTER TABLE public.navigation ENABLE ROW LEVEL SECURITY;
 --   FOR SELECT TO authenticated USING (true);
 -- 示例2：直接公开
 CREATE POLICY "Allow anon select" ON public.navigation FOR SELECT TO anon USING (true);
+
+-- 分类视图：navigation_obj  因为supabase不支持在视图中使用distinct()函数，所以需要创建一个分类视图
+CREATE OR REPLACE VIEW public.navigation_obj AS
+SELECT DISTINCT obj AS obj
+FROM public.navigation;
 ```
 
 ## 部署
