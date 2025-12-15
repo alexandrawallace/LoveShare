@@ -1,4 +1,4 @@
-// 使用ES模块语法，兼容Vercel Node.js运行时
+// /api/data/[table].js
 import { createClient } from "@supabase/supabase-js";
 
 // 从请求头获取Secret Key的辅助函数
@@ -27,10 +27,11 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 从req.query获取table参数
-    let tableName = req.query.table || "";
-    if (Array.isArray(tableName)) {
-      tableName = tableName.join("/");
+    // 从URL参数获取table参数
+    const tableName = req.query.table;
+
+    if (!tableName) {
+      return res.status(400).json({ error: "Missing table parameter" });
     }
 
     // 从请求头获取Secret Key
@@ -78,38 +79,56 @@ export default async function handler(req, res) {
 
     // 处理POST请求 - 添加数据
     if (req.method === "POST") {
-      const data = await req.json();
+      const data = req.body;
 
       if (!data || typeof data !== "object") {
         return res.status(400).json({ error: "Invalid data" });
       }
 
+      // 过滤掉空值字段，只提交有值的字段
+      const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+        if (value !== "" && value !== null && value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
       const { data: insertedData, error } = await supabase
         .from(tableName)
-        .insert([data]);
+        .insert([filteredData]);
 
       if (error) {
         throw error;
       }
 
-      return res.status(201).json(insertedData[0]);
+      return res
+        .status(201)
+        .json(insertedData ? insertedData[0] : { success: true });
     }
 
     // 处理PUT请求 - 更新数据
     if (req.method === "PUT") {
-      const { id, ...data } = await req.json();
+      const { id, ...data } = req.body;
 
       if (!id) {
         return res.status(400).json({ error: "Missing id" });
       }
 
-      if (!data || typeof data !== "object") {
-        return res.status(400).json({ error: "Invalid data" });
+      // 过滤掉空值字段，只提交有值的字段
+      const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+        if (value !== "" && value !== null && value !== undefined) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+
+      if (Object.keys(filteredData).length === 0) {
+        return res.status(400).json({ error: "No valid data to update" });
       }
 
       const { data: updatedData, error } = await supabase
         .from(tableName)
-        .update(data)
+        .update(filteredData)
         .eq("id", id)
         .select();
 
@@ -117,12 +136,14 @@ export default async function handler(req, res) {
         throw error;
       }
 
-      return res.status(200).json(updatedData[0]);
+      return res
+        .status(200)
+        .json(updatedData ? updatedData[0] : { success: true });
     }
 
     // 处理DELETE请求 - 删除数据
     if (req.method === "DELETE") {
-      const { id } = await req.json();
+      const { id } = req.body;
 
       if (!id) {
         return res.status(400).json({ error: "Missing id" });

@@ -6,6 +6,14 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/auth/verify.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/data/[table].js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": {
@@ -17,6 +25,14 @@
     {
       "src": "/api/vod(.*)",
       "dest": "/api/vod/[...path].js"
+    },
+    {
+      "src": "/api/auth/verify",
+      "dest": "/api/auth/verify.js"
+    },
+    {
+      "src": "/api/data/(?<table>[^/]+)",
+      "dest": "/api/data/[table].js"
     },
     {
       "src": "/(.*)",
