@@ -34,6 +34,7 @@ Love Share 是一个基于 React + TypeScript + Vite 构建的现代化数据展
   你只需要在右上角 ⚙ 验证 supabase 的 Secret keys 即可对数据进行增删改查
   Secret keys 获取方式: dashboard --> project setting --> API keys
   认证通过后会显示在界面显示这些操作
+  ![admin][public/add_admin.png]
 
 ## 规划中
 
