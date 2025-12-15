@@ -7,13 +7,21 @@ import {
   TableHead,
   TableRow,
   Paper,
+  IconButton,
+  Tooltip,
+  Box,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 interface TableViewProps {
   tableData: any[];
   tableConfig: any;
   selectedTable: string;
   renderCellContent: (value: any, key: string) => React.ReactNode;
+  onEdit?: (data: any) => void;
+  onDelete?: (data: any) => void;
 }
 
 const TableView: React.FC<TableViewProps> = ({
@@ -21,7 +29,11 @@ const TableView: React.FC<TableViewProps> = ({
   tableConfig,
   selectedTable,
   renderCellContent,
+  onEdit,
+  onDelete,
 }) => {
+  const { isAuthenticated } = useAuthContext();
+
   // 获取可见列
   const visibleColumns = Object.entries(
     tableConfig[selectedTable] || {}
@@ -68,35 +80,60 @@ const TableView: React.FC<TableViewProps> = ({
           >
             {visibleColumns.map(([key, value]) => (
               <TableCell
-                  key={key}
-                  sx={{
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    minWidth: {
-                      xs: "80px",
-                      md: "100px",
-                    },
-                    maxWidth: {
-                      xs: "200px",
-                      md: "300px",
-                    },
-                    fontWeight: 600,
-                    fontSize: {
-                      xs: "0.8rem",
-                      md: "0.9rem",
-                    },
-                    color: "text.primary",
-                    padding: {
-                      xs: "8px 12px",
-                      md: "12px 16px",
-                    },
-                    backgroundColor: "background.paper",
-                  }}
-                >
+                key={key}
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  minWidth: {
+                    xs: "80px",
+                    md: "100px",
+                  },
+                  maxWidth: {
+                    xs: "200px",
+                    md: "300px",
+                  },
+                  fontWeight: 600,
+                  fontSize: {
+                    xs: "0.8rem",
+                    md: "0.9rem",
+                  },
+                  color: "text.primary",
+                  padding: {
+                    xs: "8px 12px",
+                    md: "12px 16px",
+                  },
+                  backgroundColor: "background.paper",
+                }}
+              >
                 {String(value)}
               </TableCell>
             ))}
+            {isAuthenticated && (
+              <TableCell
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  minWidth: "120px",
+                  maxWidth: "120px",
+                  fontWeight: 600,
+                  fontSize: {
+                    xs: "0.8rem",
+                    md: "0.9rem",
+                  },
+                  color: "text.primary",
+                  padding: {
+                    xs: "8px 12px",
+                    md: "12px 16px",
+                  },
+                  backgroundColor: "background.paper",
+                  textAlign: "center",
+                }}
+              >
+                操作
+              </TableCell>
+            )}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -143,6 +180,66 @@ const TableView: React.FC<TableViewProps> = ({
                   {renderCellContent(row[key], key)}
                 </TableCell>
               ))}
+              {isAuthenticated && (
+                <TableCell
+                  sx={{
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    minWidth: "120px",
+                    maxWidth: "120px",
+                    padding: {
+                      xs: "8px 12px",
+                      md: "12px 16px",
+                    },
+                    fontSize: {
+                      xs: "0.8rem",
+                      md: "0.9rem",
+                    },
+                    verticalAlign: "middle",
+                    textAlign: "center",
+                  }}
+                >
+                  <Box
+                    sx={{ display: "flex", justifyContent: "center", gap: 1 }}
+                  >
+                    {onEdit && (
+                      <Tooltip title="编辑">
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={() => onEdit(row)}
+                          sx={{
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              transform: "scale(1.1)",
+                            },
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {onDelete && (
+                      <Tooltip title="删除">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={() => onDelete(row)}
+                          sx={{
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              transform: "scale(1.1)",
+                            },
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

@@ -24,6 +24,16 @@ export default defineConfig(({ mode }) => {
             path.replace(/^\/api\/vod/, env.VITE_FILMTELEVISION_API_PATH),
           secure: false,
         },
+        "/api/auth": {
+          target: "http://localhost:3000",
+          changeOrigin: true,
+          secure: false,
+        },
+        "/api/data": {
+          target: "http://localhost:3000",
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
   };

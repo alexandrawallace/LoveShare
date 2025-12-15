@@ -1,27 +1,36 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Paper,
   Box,
   Typography,
-  Button,
   Avatar,
   Chip,
   useTheme,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 interface NavigationCardViewProps {
   tableData: any[];
   tableConfig: any;
   selectedTable: string;
   renderCellContent: (value: any, key: string) => React.ReactNode;
+  onEdit?: (data: any) => void;
+  onDelete?: (data: any) => void;
 }
 
 const NavigationCardView: React.FC<NavigationCardViewProps> = ({
   tableData,
+  onEdit,
+  onDelete,
 }) => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthContext();
   // 读取环境变量，默认为中号
   const cardSize = import.meta.env.VITE_NAVIGATION_CARD_SIZE || "medium";
 
@@ -74,6 +83,23 @@ const NavigationCardView: React.FC<NavigationCardViewProps> = ({
 
   const cardConfig = getCardConfig();
 
+  // 处理卡片点击
+  const handleCardClick = (row: any) => {
+    if (row.to_article === false) {
+      // 跳转到外部链接，新窗口打开
+      window.open(row.to_link || "#", "_blank", "noopener noreferrer");
+    } else {
+      // 跳转到文章页面，使用slug作为路径参数
+      navigate(`/article/${row.slug || "test"}`);
+    }
+  };
+
+  // 阻止事件冒泡
+  const handleButtonClick = (e: React.MouseEvent, callback: () => void) => {
+    e.stopPropagation();
+    callback();
+  };
+
   return (
     <Box
       sx={{
@@ -117,19 +143,21 @@ const NavigationCardView: React.FC<NavigationCardViewProps> = ({
               "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), " +
               "box-shadow var(--theme-transition-duration) cubic-bezier(0.4, 0, 0.2, 1), " +
               "border-color var(--theme-transition-duration) cubic-bezier(0.4, 0, 0.2, 1), " +
-              "background-color var(--theme-transition-duration) cubic-bezier(0.4, 0, 0.2, 1)",
+              "background-color var(--theme-transition-duration) cubic-bezier(0.4, 0, 0.2, 1), " +
+              "cursor var(--theme-transition-duration) cubic-bezier(0.4, 0, 0.2, 1)",
             border: `1px solid ${theme.palette.divider}`,
-
             backgroundColor: "background.paper",
             backdropFilter: "blur(10px)",
+            cursor: "pointer",
             "&:hover": {
               transform: "translateY(-8px)",
               boxShadow: theme.shadows[5],
               borderColor: theme.palette.primary.main,
             },
           }}
+          onClick={() => handleCardClick(row)}
         >
-          {/* Small尺寸布局：图标 title 访问 详细 */}
+          {/* Small尺寸布局：图标 title + 摘要 */}
           {cardSize === "small" && (
             <Box
               sx={{
@@ -155,7 +183,7 @@ const NavigationCardView: React.FC<NavigationCardViewProps> = ({
                 {!row.img && row.title?.charAt(0)?.toUpperCase()}
               </Avatar>
 
-              {/* 标题 */}
+              {/* 标题和摘要 */}
               <Box sx={{ flex: 1, minWidth: 0 }}>
                 <Typography
                   variant="h6"
@@ -167,81 +195,67 @@ const NavigationCardView: React.FC<NavigationCardViewProps> = ({
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    mb: 0.25,
                   }}
                 >
                   {row.title || "无标题"}
                 </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: "0.75rem",
+                    lineHeight: 1.3,
+                    color: "text.secondary",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {row.abstract || "无摘要"}
+                </Typography>
               </Box>
 
-              {/* 按钮组 */}
-              <Box
-                sx={{
-                  display: "flex", // 修正居中方式（display: center 是错误写法）
-                  justifyContent: "center", // 按钮组水平居中
-                  alignItems: "center", // 按钮组垂直居中（可选）
-                  gap: 0.2,
-                }}
-              >
-                {/* 访问按钮 - 正方形小尺寸 + Icon 居中 */}
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small" // 强制使用内置小尺寸（覆盖cardConfig）
-                  startIcon={<OpenInNewIcon fontSize="small" />}
-                  href={row.to_link || "#"}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  sx={{
-                    borderRadius: 1.5,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    // 核心：设置宽高相等（正方形）+ 小尺寸
-                    width: 32, // 正方形宽度（可根据需求调整：28/32/36）
-                    height: 32, // 正方形高度（和宽度一致）
-                    padding: 0, // 清空默认内边距，避免Icon偏移
-                    boxShadow: 1,
-                    // 强制Icon居中（关键）
-                    "& .MuiButton-startIcon": {
-                      margin: 0, // 清空Icon默认的左右边距
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    },
-                    // 隐藏文字（如果按钮只有Icon）
-                    "& .MuiButton-label": {
-                      justifyContent: "center", // 标签整体居中
-                    },
-                  }}
-                ></Button>
-
-                {/* 详细按钮 - 同样式保持统一 */}
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  size="small"
-                  startIcon={<VisibilityIcon fontSize="small" />}
-                  sx={{
-                    borderRadius: 1.5,
-                    textTransform: "none",
-                    fontWeight: 600,
-                    // 正方形小尺寸
-                    width: 32,
-                    height: 32,
-                    padding: 0,
-                    borderWidth: 2,
-                    // Icon居中
-                    "& .MuiButton-startIcon": {
-                      margin: 0,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    },
-                    "& .MuiButton-label": {
-                      justifyContent: "center",
-                    },
-                  }}
-                ></Button>
-              </Box>
+              {/* 操作按钮 */}
+              {isAuthenticated && (
+                <Box sx={{ display: "flex", gap: 0.5 }}>
+                  {onEdit && (
+                    <Tooltip title="编辑">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={(e) => handleButtonClick(e, () => onEdit(row))}
+                        sx={{
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            transform: "scale(1.1)",
+                          },
+                        }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {onDelete && (
+                    <Tooltip title="删除">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={(e) =>
+                          handleButtonClick(e, () => onDelete(row))
+                        }
+                        sx={{
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            transform: "scale(1.1)",
+                          },
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
+              )}
             </Box>
           )}
 
@@ -310,72 +324,6 @@ const NavigationCardView: React.FC<NavigationCardViewProps> = ({
                     />
                   )}
                 </Box>
-
-                {/* Medium尺寸：按钮在标题旁边 */}
-                {cardSize === "medium" && (
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    {/* 访问按钮 */}
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size={cardConfig.buttonSize}
-                      startIcon={<OpenInNewIcon fontSize="small" />}
-                      href={row.to_link || "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{
-                        borderRadius: 1.5,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        fontSize:
-                          cardConfig.buttonSize === "small"
-                            ? "0.8rem"
-                            : "0.9rem",
-                        py: cardConfig.buttonSize === "small" ? 1 : 1.25,
-                        boxShadow: 1,
-                        // Icon居中
-                        "& .MuiButton-startIcon": {
-                          margin: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        },
-                        "& .MuiButton-label": {
-                          justifyContent: "center",
-                        },
-                      }}
-                    ></Button>
-
-                    {/* 详细按钮 */}
-                    <Button
-                      variant="outlined"
-                      color="primary"
-                      size={cardConfig.buttonSize}
-                      startIcon={<VisibilityIcon fontSize="small" />}
-                      sx={{
-                        borderRadius: 1.5,
-                        textTransform: "none",
-                        fontWeight: 600,
-                        fontSize:
-                          cardConfig.buttonSize === "small"
-                            ? "0.8rem"
-                            : "0.9rem",
-                        py: cardConfig.buttonSize === "small" ? 1 : 1.25,
-                        borderWidth: 2,
-                        // Icon居中
-                        "& .MuiButton-startIcon": {
-                          margin: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        },
-                        "& .MuiButton-label": {
-                          justifyContent: "center",
-                        },
-                      }}
-                    ></Button>
-                  </Box>
-                )}
               </Box>
 
               {/* 摘要内容 - Medium和Large都显示 */}
@@ -398,94 +346,47 @@ const NavigationCardView: React.FC<NavigationCardViewProps> = ({
                 </Typography>
               </Box>
 
-              {/* Large尺寸：按钮在底部 */}
-              {cardSize === "large" && (
+              {/* 操作按钮 */}
+              {isAuthenticated && (
                 <Box
-                  sx={{
-                    display: "flex",
-                    gap: 1.5,
-                    justifyContent: "flex-start",
-                    mt: "auto",
-                    pt: 2,
-                    borderTop: `1px solid ${theme.palette.divider}`,
-                    transition:
-                      "border-color var(--theme-transition-duration) ease",
-                  }}
+                  sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}
                 >
-                  {/* 访问按钮 */}
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    size={cardConfig.buttonSize}
-                    startIcon={<OpenInNewIcon fontSize="small" />}
-                    href={row.to_link || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{
-                      flex: 1,
-                      borderRadius: 1.5,
-                      textTransform: "none",
-                      fontWeight: 600,
-                      fontSize:
-                        cardConfig.buttonSize === "small" ? "0.8rem" : "0.9rem",
-                      py: cardConfig.buttonSize === "small" ? 1 : 1.25,
-                      boxShadow: 1,
-                      transition:
-                        "box-shadow 0.2s ease, transform 0.2s ease, background-color var(--theme-transition-duration) ease",
-                      "&:hover": {
-                        boxShadow: 3,
-                        transform: "translateY(-1px)",
-                        // Icon居中
-                        "& .MuiButton-startIcon": {
-                          margin: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        },
-                        "& .MuiButton-label": {
-                          justifyContent: "center",
-                        },
-                      },
-                    }}
-                  >
-                    访问
-                  </Button>
-
-                  {/* 详细按钮 */}
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    size={cardConfig.buttonSize}
-                    startIcon={<VisibilityIcon fontSize="small" />}
-                    sx={{
-                      borderRadius: 1.5,
-                      textTransform: "none",
-                      fontWeight: 600,
-                      fontSize:
-                        cardConfig.buttonSize === "small" ? "0.8rem" : "0.9rem",
-                      py: cardConfig.buttonSize === "small" ? 1 : 1.25,
-                      borderWidth: 2,
-                      transition:
-                        "border-color var(--theme-transition-duration) ease, background-color var(--theme-transition-duration) ease, transform 0.2s ease",
-                      "&:hover": {
-                        borderWidth: 2,
-                        backgroundColor: theme.palette.primary.main + "15",
-                        transform: "translateY(-1px)",
-                        // Icon居中
-                        "& .MuiButton-startIcon": {
-                          margin: 0,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        },
-                        "& .MuiButton-label": {
-                          justifyContent: "center",
-                        },
-                      },
-                    }}
-                  >
-                    详细
-                  </Button>
+                  {onEdit && (
+                    <Tooltip title="编辑">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={(e) => handleButtonClick(e, () => onEdit(row))}
+                        sx={{
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            transform: "scale(1.1)",
+                          },
+                        }}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {onDelete && (
+                    <Tooltip title="删除">
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={(e) =>
+                          handleButtonClick(e, () => onDelete(row))
+                        }
+                        sx={{
+                          transition: "all 0.2s ease",
+                          "&:hover": {
+                            transform: "scale(1.1)",
+                          },
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </Box>
               )}
             </>

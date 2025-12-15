@@ -30,10 +30,14 @@ Love Share 是一个基于 React + TypeScript + Vite 构建的现代化数据展
 - 🔄 **实时数据更新**: 使用 React Query 实现数据缓存和自动失效
 - 💪 **类型安全**: 全面的 TypeScript 支持
 - 📱 **响应式设计**: 适配各种屏幕尺寸
+- 🔒 **数据管理**: 支持数据增删改查
+  你只需要在右上角 ⚙ 验证 supabase 的 Secret keys 即可对数据进行增删改查
+  Secret keys 获取方式: dashboard --> project setting --> API keys
+  认证通过后会显示在界面显示这些操作
 
 ## 规划中
 
-- 🔒 **数据管理**: 计划支持数据增删改查，markdown 编辑文章，支持详细视图（必须）
+- 🔒 **数据管理**: markdown 编辑文章，支持详细视图（必须）
 - 🔑 **用户认证**: 计划添加用户登录和注册功能（可能）
 
 ## 项目结构

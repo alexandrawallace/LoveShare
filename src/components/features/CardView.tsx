@@ -1,11 +1,16 @@
 import React from "react";
-import { Paper, Box, Typography } from "@mui/material";
+import { Paper, Box, Typography, IconButton, Tooltip } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { useAuthContext } from "../../contexts/AuthContext";
 
 interface CardViewProps {
   tableData: any[];
   tableConfig: any;
   selectedTable: string;
   renderCellContent: (value: any, key: string) => React.ReactNode;
+  onEdit?: (data: any) => void;
+  onDelete?: (data: any) => void;
 }
 
 const CardView: React.FC<CardViewProps> = ({
@@ -13,7 +18,16 @@ const CardView: React.FC<CardViewProps> = ({
   tableConfig,
   selectedTable,
   renderCellContent,
+  onEdit,
+  onDelete,
 }) => {
+  const { isAuthenticated } = useAuthContext();
+
+  // 阻止事件冒泡
+  const handleButtonClick = (e: React.MouseEvent, callback: () => void) => {
+    e.stopPropagation();
+    callback();
+  };
   // 获取当前表的配置
   const currentTableConfig = tableConfig[selectedTable] || {};
 
@@ -239,46 +253,107 @@ const CardView: React.FC<CardViewProps> = ({
                   overflow: "auto",
                 }}
               >
-                {visibleColumns.map(([key, label], colIndex) => (
+                {/* 操作按钮 */}
+                {isAuthenticated && (
                   <Box
-                    key={key}
                     sx={{
-                      mb: colIndex < visibleColumns.length - 1 ? 2 : 0,
-                      wordBreak: "break-word",
-                      paddingBottom:
-                        colIndex < visibleColumns.length - 1 ? 1 : 0,
-                      borderBottom:
-                        colIndex < visibleColumns.length - 1
-                          ? (theme) => `1px solid ${theme.palette.divider}`
-                          : "none",
-                      transition:
-                        "border-color var(--theme-transition-duration) ease",
+                      position: "absolute",
+                      top: 8,
+                      right: 8,
+                      display: "flex",
+                      gap: 0.5,
+                      zIndex: 2,
                     }}
                   >
-                    <Typography
-                      variant="subtitle2"
-                      sx={{
-                        fontWeight: 600,
-                        color: "text.secondary",
-                        mb: 0.75,
-                        fontSize: "0.85rem",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.5px",
-                      }}
-                    >
-                      {String(label)}:
-                    </Typography>
-                    <Box
-                      sx={{
-                        ml: 0,
-                        fontSize: "0.785rem",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {renderCellContent(row[key], key)}
-                    </Box>
+                    {onEdit && (
+                      <Tooltip title="编辑">
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          onClick={(e) =>
+                            handleButtonClick(e, () => onEdit(row))
+                          }
+                          sx={{
+                            transition: "all 0.2s ease",
+                            backgroundColor: "rgba(255, 255, 255, 0.9)",
+                            "&:hover": {
+                              backgroundColor: "rgba(255, 255, 255, 1)",
+                              transform: "scale(1.1)",
+                            },
+                            boxShadow: 1,
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    {onDelete && (
+                      <Tooltip title="删除">
+                        <IconButton
+                          size="small"
+                          color="error"
+                          onClick={(e) =>
+                            handleButtonClick(e, () => onDelete(row))
+                          }
+                          sx={{
+                            transition: "all 0.2s ease",
+                            backgroundColor: "rgba(255, 255, 255, 0.9)",
+                            "&:hover": {
+                              backgroundColor: "rgba(255, 255, 255, 1)",
+                              transform: "scale(1.1)",
+                            },
+                            boxShadow: 1,
+                          }}
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
                   </Box>
-                ))}
+                )}
+                {/* 卡片背面内容 */}
+                <Box sx={{ pt: 4 }}>
+                  {visibleColumns.map(([key, label], colIndex) => (
+                    <Box
+                      key={key}
+                      sx={{
+                        mb: colIndex < visibleColumns.length - 1 ? 2 : 0,
+                        wordBreak: "break-word",
+                        paddingBottom:
+                          colIndex < visibleColumns.length - 1 ? 1 : 0,
+                        borderBottom:
+                          colIndex < visibleColumns.length - 1
+                            ? (theme) => `1px solid ${theme.palette.divider}`
+                            : "none",
+                        transition:
+                          "border-color var(--theme-transition-duration) ease",
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: 600,
+                          color: "text.secondary",
+                          mb: 0.75,
+                          fontSize: "0.85rem",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        {String(label)}:
+                      </Typography>
+                      <Box
+                        sx={{
+                          ml: 0,
+                          fontSize: "0.785rem",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {renderCellContent(row[key], key)}
+                      </Box>
+                    </Box>
+                  ))}
+                </Box>
               </Paper>
             )}
           </Box>

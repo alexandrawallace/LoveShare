@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Routes, Route } from "react-router-dom";
 import supabase from "./lib/supabase";
 import Layout from "./components/layout/Layout";
 import { useTableContext } from "./contexts/TableContext";
@@ -9,8 +10,10 @@ import TableView from "./components/features/TableView";
 import CardView from "./components/features/CardView";
 import NavigationCardView from "./components/features/NavigationCardView";
 import VideoOnline from "./components/features/VideoOnline";
+import DataEditor from "./components/features/DataEditor";
 import SearchBar from "./components/common/SearchBar";
 import Home from "./pages/Home";
+import Article from "./pages/Article";
 import {
   Box,
   Pagination,
@@ -19,7 +22,15 @@ import {
   CircularProgress,
   ToggleButton,
   ToggleButtonGroup,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
 } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import { useAuthContext } from "./contexts/AuthContext";
 
 function Page() {
   // 使用上下文获取选中的表名和分类
@@ -51,6 +62,22 @@ function Page() {
   const [searchConfig, setSearchConfig] = useState<{
     [tableName: string]: string[];
   }>({});
+  // 认证状态
+  const { isAuthenticated, secretKey } = useAuthContext();
+  // 查询客户端，用于刷新数据
+  const queryClient = useQueryClient();
+  // 编辑弹窗状态
+  const [editorOpen, setEditorOpen] = useState(false);
+  // 删除确认弹窗状态
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // 当前编辑的数据
+  const [currentEditData, setCurrentEditData] = useState<any>(null);
+  // 当前要删除的数据
+  const [currentDeleteData, setCurrentDeleteData] = useState<any>(null);
+  // 删除加载状态
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  // 删除错误
+  const [deleteError, setDeleteError] = useState("");
 
   // 解析环境变量中的配置
   useEffect(() => {
@@ -267,6 +294,76 @@ function Page() {
     );
   };
 
+  // 打开编辑弹窗
+  const handleEditOpen = (data?: any) => {
+    setCurrentEditData(data || null);
+    setEditorOpen(true);
+  };
+
+  // 关闭编辑弹窗
+  const handleEditClose = () => {
+    setEditorOpen(false);
+    setCurrentEditData(null);
+  };
+
+  // 打开删除确认弹窗
+  const handleDeleteOpen = (data: any) => {
+    setCurrentDeleteData(data);
+    setDeleteDialogOpen(true);
+  };
+
+  // 关闭删除确认弹窗
+  const handleDeleteClose = () => {
+    setDeleteDialogOpen(false);
+    setCurrentDeleteData(null);
+    setDeleteError("");
+  };
+
+  // 执行删除操作
+  const handleDeleteConfirm = async () => {
+    if (!secretKey || !currentDeleteData) {
+      return;
+    }
+
+    setDeleteLoading(true);
+    setDeleteError("");
+
+    try {
+      const response = await fetch(`/api/data/${selectedTable}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "x-supabase-secret-key": secretKey,
+        },
+        body: JSON.stringify({ id: currentDeleteData.id }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || result.details || "删除失败");
+      }
+
+      // 删除成功，刷新数据
+      queryClient.invalidateQueries({
+        queryKey: ["tableData"],
+      });
+
+      handleDeleteClose();
+    } catch (err: any) {
+      setDeleteError(err.message || "删除失败，请重试");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  // 数据操作成功后刷新数据
+  const handleDataSuccess = () => {
+    queryClient.invalidateQueries({
+      queryKey: ["tableData"],
+    });
+  };
+
   return (
     <Box
       sx={{
@@ -316,54 +413,79 @@ function Page() {
           </Typography>
         </Box>
 
-        {/* 视图切换按钮 */}
-        {viewConfig[selectedTable] && viewConfig[selectedTable].length > 0 && (
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(_, newMode) => {
-              if (newMode !== null) {
-                setViewMode(newMode);
-              }
-            }}
-            aria-label="view mode"
-            sx={{
-              backgroundColor: "background.paper",
-              borderRadius: "12px",
-              border: (theme) => `1px solid ${theme.palette.divider}`,
-              boxShadow: (theme) => theme.shadows[1],
-              "& .MuiToggleButton-root": {
-                borderRadius: "10px",
-                px: 1,
-                py: 0.5,
-                fontWeight: 500,
-                fontSize: "0.675rem",
-                textTransform: "none",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  backgroundColor: (theme) => theme.palette.action.hover,
-                },
-              },
-              "& .MuiToggleButton-root.Mui-selected": {
-                backgroundColor: (theme) => theme.palette.action.selected,
-                color: "primary.main",
-                boxShadow: (theme) => theme.shadows[2],
-                "&:hover": {
-                  backgroundColor: (theme) => theme.palette.action.hover,
-                },
-              },
-              "& .MuiToggleButton-root + .MuiToggleButton-root": {
-                marginLeft: "4px",
-              },
-            }}
-          >
-            {viewConfig[selectedTable].map((view) => (
-              <ToggleButton key={view} value={view} aria-label={`${view} view`}>
-                {view === "table" ? "表格视图" : "卡片视图"}
-              </ToggleButton>
-            ))}
-          </ToggleButtonGroup>
-        )}
+        {/* 操作按钮区域 */}
+        <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+          {/* 添加数据按钮 */}
+          {isAuthenticated && (
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => handleEditOpen()}
+              sx={{
+                fontSize: "0.75rem",
+                px: 2,
+                borderRadius: 1.5,
+              }}
+            >
+              添加数据
+            </Button>
+          )}
+
+          {/* 视图切换按钮 */}
+          {viewConfig[selectedTable] &&
+            viewConfig[selectedTable].length > 0 && (
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_, newMode) => {
+                  if (newMode !== null) {
+                    setViewMode(newMode);
+                  }
+                }}
+                aria-label="view mode"
+                sx={{
+                  backgroundColor: "background.paper",
+                  borderRadius: "12px",
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  boxShadow: (theme) => theme.shadows[1],
+                  "& .MuiToggleButton-root": {
+                    borderRadius: "10px",
+                    px: 1,
+                    py: 0.5,
+                    fontWeight: 500,
+                    fontSize: "0.675rem",
+                    textTransform: "none",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      backgroundColor: (theme) => theme.palette.action.hover,
+                    },
+                  },
+                  "& .MuiToggleButton-root.Mui-selected": {
+                    backgroundColor: (theme) => theme.palette.action.selected,
+                    color: "primary.main",
+                    boxShadow: (theme) => theme.shadows[2],
+                    "&:hover": {
+                      backgroundColor: (theme) => theme.palette.action.hover,
+                    },
+                  },
+                  "& .MuiToggleButton-root + .MuiToggleButton-root": {
+                    marginLeft: "4px",
+                  },
+                }}
+              >
+                {viewConfig[selectedTable].map((view) => (
+                  <ToggleButton
+                    key={view}
+                    value={view}
+                    aria-label={`${view} view`}
+                  >
+                    {view === "table" ? "表格视图" : "卡片视图"}
+                  </ToggleButton>
+                ))}
+              </ToggleButtonGroup>
+            )}
+        </Box>
       </Box>
 
       {/* 搜索栏 */}
@@ -422,6 +544,8 @@ function Page() {
               tableConfig={tableConfig}
               selectedTable={selectedTable}
               renderCellContent={renderCellContent}
+              onEdit={handleEditOpen}
+              onDelete={handleDeleteOpen}
             />
           ) : selectedTable === "navigation" ? (
             <NavigationCardView
@@ -429,6 +553,8 @@ function Page() {
               tableConfig={tableConfig}
               selectedTable={selectedTable}
               renderCellContent={renderCellContent}
+              onEdit={handleEditOpen}
+              onDelete={handleDeleteOpen}
             />
           ) : (
             <CardView
@@ -436,6 +562,8 @@ function Page() {
               tableConfig={tableConfig}
               selectedTable={selectedTable}
               renderCellContent={renderCellContent}
+              onEdit={handleEditOpen}
+              onDelete={handleDeleteOpen}
             />
           )
         ) : (
@@ -481,20 +609,93 @@ function Page() {
           showLastButton
         />
       </Box>
+
+      {/* 数据编辑弹窗 */}
+      <DataEditor
+        open={editorOpen}
+        onClose={handleEditClose}
+        onSuccess={handleDataSuccess}
+        selectedTable={selectedTable}
+        initialData={currentEditData}
+      />
+
+      {/* 删除确认弹窗 */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteClose}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            boxShadow: 3,
+          },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>确认删除</DialogTitle>
+        <DialogContent>
+          {deleteError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {deleteError}
+            </Alert>
+          )}
+          <Typography variant="body1">
+            您确定要删除这条数据吗？此操作不可恢复。
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleDeleteClose}
+            variant="outlined"
+            disabled={deleteLoading}
+          >
+            取消
+          </Button>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            disabled={deleteLoading}
+            startIcon={deleteLoading ? <CircularProgress size={20} /> : null}
+          >
+            {deleteLoading ? "删除中..." : "确认删除"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
 
-// 内容组件，根据选中的表决定渲染哪个页面
+// 内容组件，根据路由渲染不同页面
 function Content() {
+  return (
+    <>
+      <Routes>
+        {/* 文章页面路由 - 不带Layout */}
+        <Route path="/article/:slug" element={<Article />} />
+        <Route path="/article/:slug.html" element={<Article />} />
+
+        {/* 其他页面路由 - 带Layout */}
+        <Route path="/*" element={<MainContent />} />
+      </Routes>
+    </>
+  );
+}
+
+// 主内容组件，根据选中的表决定渲染哪个页面
+function MainContent() {
   const { selectedTable } = useTableContext();
 
   // 当选中的表是home（主页）时，渲染Home组件
   // 当选中的表是video-online（在线观影）时，渲染VideoOnline组件
   // 否则渲染Page组件
-  if (selectedTable === "home") return <Home />;
-  if (selectedTable === "video-online") return <VideoOnline />;
-  return <Page />;
+  return (
+    <Layout>
+      {selectedTable === "home" && <Home />}
+      {selectedTable === "video-online" && <VideoOnline />}
+      {selectedTable !== "home" && selectedTable !== "video-online" && <Page />}
+    </Layout>
+  );
 }
 
 // 使用 Layout 组件包裹 Content 组件
@@ -502,9 +703,7 @@ function App() {
   return (
     <ThemeProvider>
       <TableProvider>
-        <Layout>
-          <Content />
-        </Layout>
+        <Content />
       </TableProvider>
     </ThemeProvider>
   );
