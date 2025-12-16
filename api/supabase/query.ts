@@ -1,5 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
+// 边缘函数配置
+export const config = {
+  runtime: "edge",
+};
+
 export default async function handler(req: Request) {
   try {
     // 1. 服务端读取 Vercel 环境变量（不再用 import.meta.env，改用 process.env）
