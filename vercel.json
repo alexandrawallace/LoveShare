@@ -15,7 +15,7 @@
     },
     {
       "src": "api/supabase/query.ts",
-      "use": "@vercel/edge"
+      "use": "@vercel/node"
     },
     {
       "src": "package.json",
